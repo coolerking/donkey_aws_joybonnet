@@ -113,7 +113,7 @@ class JoyBonnet:
             self.pi.callback(gpio, pigpio.EITHER_EDGE, self.handle_button)
         self.init_key_values()
 
-    def init_key_values(self)
+    def init_key_values(self):
         """
         戻り値インスタンス変数群を初期化する。
         引数：
