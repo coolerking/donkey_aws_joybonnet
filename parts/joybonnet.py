@@ -138,7 +138,13 @@ class JoyBonnet:
         #    self.log('-> {}'.format(retval))
         return retval
 
-    def handle_button(self, pin):
+    def handle_button(self, pin, level=2, tick=0):
+        """
+        引数：
+            pin     GPIO番号
+            level   0:Lowになった、1:Highになった、2:変化なし
+            tick    bootしてからの経過時間(mSec)
+        """
         key = self.KEYS[pin]
         time.sleep(self.BOUNCE_TIME)
         if pin >= 1000:
