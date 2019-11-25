@@ -82,8 +82,8 @@ class JoyBonnet:
         self.key_map = {
             103: 'dpad_up',
             108: 'dpad_down',
-            106: 'dpad_left',
-            105: 'dpad_right',
+            106: 'dpad_right',
+            105: 'dpad_left',
             45: 'x',
             44: 'y',
             56: 'a',
@@ -111,6 +111,28 @@ class JoyBonnet:
             sys.exit(0)
         for gpio in self.BUTTONS:
             self.pi.callback(gpio, pigpio.EITHER_EDGE, self.handle_button)
+        self.init_key_values()
+
+    def init_key_values(self)
+        """
+        戻り値インスタンス変数群を初期化する。
+        引数：
+            なし
+        戻り値：
+            なし
+        """
+        self.dpad_up = 0
+        self.dpad_down = 0
+        self.dpad_left = 0
+        self.dpad_right = 0
+        self.x = 0
+        self.y = 0
+        self.a = 0
+        self.b = 0
+        self.select = 0
+        self.start = 0
+        self.1p = 0
+        self.2p = 0
 
     def ads_read(self, channel):
         configword = self.ADS1015_REG_CONFIG_CQUE_NONE | \
@@ -167,6 +189,33 @@ class JoyBonnet:
             state = 0 if self.pi.read(pin) else 1
             self.ui.write(e.EV_KEY, key, state)
             self.ui.syn()
+        key_name = self.key_map.get(key)
+        if key_name is None:
+            return
+        elif key_name == 'dpad_up':
+            self.dpad_up = 1 if state else 0
+        elif key_name == 'dpad_down':
+            self.dpad_down = 1 if state else 0
+        elif key_name == 'dpad_left':
+            self.dpad_left = 1 if state else 0
+        elif key_name == 'dpad_right':
+            self.dpad_right = 1 if state else 0
+        elif key_name == '1p':
+            self.1p = 1 if state else 0
+        elif key_name == '2p':
+            self.2p = 1 if state else 0
+        elif key_name == 'start':
+            self.start = 1 if state else 0
+        elif key_name == 'select':
+            self.select = 1 if state else 0
+        elif key_name == 'x':
+            self.x = 1 if state else 0
+        elif key_name == 'y':
+            self.y = 1 if state else 0
+        elif key_name == 'a':
+            self.a = 1 if state else 0
+        elif key_name == 'b':
+            self.b = 1 if state else 0
         if self.debug:
             self.log("Pin: {}, KeyCode: {}, Event: {}".format(pin, self.key_map.get(key, 'None'), 'press' if state else 'release'))
 
@@ -205,6 +254,46 @@ class JoyBonnet:
             raise ConnectionError('Error:{} in i2c_read_i2c_block_data'.format(
                 str(b)))
 
+    def update(self):
+        while True:
+            try:
+                y = 800 - joy.ads_read(0)
+                x = joy.ads_read(1) - 800
+            except IOError:
+                continue
+            #print("(%d , %d)" % (x, y))
+
+            if (y > joy.ANALOG_THRESH_POS) and not joy.analog_states[0]:
+                joy.analog_states[0] = True
+                joy.handle_button(1000)      # send UP press
+            if (y < joy.ANALOG_THRESH_POS) and joy.analog_states[0]:
+                joy.analog_states[0] = False
+                joy.handle_button(1000)      # send UP release
+            if (y < joy.ANALOG_THRESH_NEG) and not joy.analog_states[1]:
+                joy.analog_states[1] = True
+                joy.handle_button(1001)      # send DOWN press
+            if (y > joy.ANALOG_THRESH_NEG) and joy.analog_states[1]:
+                joy.analog_states[1] = False
+                joy.handle_button(1001)      # send DOWN release
+            if (x < joy.ANALOG_THRESH_NEG) and not joy.analog_states[2]:
+                joy.analog_states[2] = True
+                joy.handle_button(1002)      # send LEFT press
+            if (x > joy.ANALOG_THRESH_NEG) and joy.analog_states[2]:
+                joy.analog_states[2] = False
+                joy.handle_button(1002)      # send LEFT release
+            if (x > joy.ANALOG_THRESH_POS) and not joy.analog_states[3]:
+                joy.analog_states[3] = True
+                joy.handle_button(1003)      # send RIGHT press
+            if (x < joy.ANALOG_THRESH_POS) and joy.analog_states[3]:
+                joy.analog_states[3] = False
+                joy.handle_button(1003)      # send RIGHT release
+
+            time.sleep(0.01)
+
+    def run_threaded(self):
+        return self.dpad_up, self.dpad_down, self.dpad_left, self.dpad_right, \
+            self.x, self.y, self.a, self.b, self.select, self.start, self.1p, self.2p
+
     def shutdown(self):
         """
         I2C通信を閉じる。
@@ -219,37 +308,4 @@ class JoyBonnet:
 
 if __name__ == '__main__':
     joy = JoyBonnet(debug=True)
-    while True:
-        try:
-            y = 800 - joy.ads_read(0)
-            x = joy.ads_read(1) - 800
-        except IOError:
-            continue
-        #print("(%d , %d)" % (x, y))
-
-        if (y > joy.ANALOG_THRESH_POS) and not joy.analog_states[0]:
-            joy.analog_states[0] = True
-            joy.handle_button(1000)      # send UP press
-        if (y < joy.ANALOG_THRESH_POS) and joy.analog_states[0]:
-            joy.analog_states[0] = False
-            joy.handle_button(1000)      # send UP release
-        if (y < joy.ANALOG_THRESH_NEG) and not joy.analog_states[1]:
-            joy.analog_states[1] = True
-            joy.handle_button(1001)      # send DOWN press
-        if (y > joy.ANALOG_THRESH_NEG) and joy.analog_states[1]:
-            joy.analog_states[1] = False
-            joy.handle_button(1001)      # send DOWN release
-        if (x < joy.ANALOG_THRESH_NEG) and not joy.analog_states[2]:
-            joy.analog_states[2] = True
-            joy.handle_button(1002)      # send LEFT press
-        if (x > joy.ANALOG_THRESH_NEG) and joy.analog_states[2]:
-            joy.analog_states[2] = False
-            joy.handle_button(1002)      # send LEFT release
-        if (x > joy.ANALOG_THRESH_POS) and not joy.analog_states[3]:
-            joy.analog_states[3] = True
-            joy.handle_button(1003)      # send RIGHT press
-        if (x < joy.ANALOG_THRESH_POS) and joy.analog_states[3]:
-            joy.analog_states[3] = False
-            joy.handle_button(1003)      # send RIGHT release
-
-        time.sleep(0.01)
+    joy.update()
