@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+Adafruit Joy Bonnet をコントローラとして使用するパーツクラス
+を提供するモジュール。
+
+pigpio/evdev がインストールされていることが前提となる。
+"""
 import time
 import signal
 import os
@@ -21,6 +27,10 @@ except ImportError:
         'sudo systemctl enable pigpiod && pip install pigpio')
 
 class JoyBonnet:
+    """
+    Adafruit Joy Bonnet をコントローラとして使用するパーツクラス。
+    threaded = Trueで動かす必要がある。
+    """
     BOUNCE_TIME = 0.01 # Debounce time in seconds
 
     BUTTON_A = 12
@@ -292,7 +302,7 @@ class JoyBonnet:
 
     def run_threaded(self):
         return self.dpad_up, self.dpad_down, self.dpad_left, self.dpad_right, \
-            self.x, self.y, self.a, self.b, self.select, self.start, self.1p, self.2p
+            self.x, self.y, self.a, self.b, self.select, self.start, self.p1, self.p2
 
     def shutdown(self):
         """
@@ -307,5 +317,8 @@ class JoyBonnet:
             self.log('i2c shutdown')
 
 if __name__ == '__main__':
+    """
+    テスト実行用
+    """
     joy = JoyBonnet(debug=True)
     joy.update()
