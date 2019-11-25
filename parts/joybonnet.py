@@ -131,8 +131,8 @@ class JoyBonnet:
         self.b = 0
         self.select = 0
         self.start = 0
-        self.1p = 0
-        self.2p = 0
+        self.p1 = 0
+        self.p2 = 0
 
     def ads_read(self, channel):
         configword = self.ADS1015_REG_CONFIG_CQUE_NONE | \
@@ -201,9 +201,9 @@ class JoyBonnet:
         elif key_name == 'dpad_right':
             self.dpad_right = 1 if state else 0
         elif key_name == '1p':
-            self.1p = 1 if state else 0
+            self.p1 = 1 if state else 0
         elif key_name == '2p':
-            self.2p = 1 if state else 0
+            self.p2 = 1 if state else 0
         elif key_name == 'start':
             self.start = 1 if state else 0
         elif key_name == 'select':
