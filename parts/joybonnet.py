@@ -130,8 +130,8 @@ class JoyBonnet:
                 pass
         # read data out!
         analogdata = self.read_i2c_block_data(self.ADS1x15_POINTER_CONVERSION, 2)
-        if self.debug:
-            print(analogdata),
+        #if self.debug:
+        #    print(analogdata)
         retval = (analogdata[0] << 8) | analogdata[1]
         retval /= 16
         #if self.debug:
