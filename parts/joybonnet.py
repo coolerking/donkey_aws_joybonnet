@@ -92,7 +92,7 @@ class JoyBonnet:
             exit('This library requires the evdev module\n' + \
                 'Install with: sudo pip install evdev')
         except uinput.UInputError as uie:
-            self.log(str(uie.message))
+            self.log(str(uie))
             self.log('Have you tried running as root? sudo {}'.format(str(sys.argv[0])))
             sys.exit(0)
         for gpio in self.BUTTONS:
