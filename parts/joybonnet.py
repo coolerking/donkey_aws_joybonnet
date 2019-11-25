@@ -79,6 +79,20 @@ class JoyBonnet:
         ADS1015_REG_CONFIG_MUX_SINGLE_2, ADS1015_REG_CONFIG_MUX_SINGLE_3)
 
     def __init__(self, pgio=None, i2c_bus=1, i2c_address=0x48, debug=False):
+        self.key_map = {
+            103: 'dpad_up',
+            108: 'dpad_down',
+            106: 'dpad_left',
+            105: 'dpad_right',
+            45: 'x',
+            44: 'y',
+            56: 'a',
+            29: 'b',
+            57: 'select',
+            28: 'start',
+            2: '1p',
+            3: '2p',
+        }
         self.debug = debug
         self.pi = pgio or pigpio.pi()
         self.handler = self.pi.i2c_open(i2c_bus, i2c_address)
@@ -154,9 +168,16 @@ class JoyBonnet:
             self.ui.write(e.EV_KEY, key, state)
             self.ui.syn()
         if self.debug:
-            self.log("Pin: {}, KeyCode: {}, Event: {}".format(pin, key, 'press' if state else 'release'))
+            self.log("Pin: {}, KeyCode: {}, Event: {}".format(pin, self.key_map.get(key, 'None'), 'press' if state else 'release'))
 
     def log(self, msg):
+        """
+        標準出力にログを表示する。
+        引数：
+            msg     メッセージ
+        戻り値：
+            なし
+        """
         print('[JoyBonnet]{}: {}'.format(
             str(datetime.now()), str(msg),
         ))
@@ -185,6 +206,13 @@ class JoyBonnet:
                 str(b)))
 
     def shutdown(self):
+        """
+        I2C通信を閉じる。
+        引数：
+            なし
+        戻り値：
+            なし
+        """
         self.pi.i2c_close(self.handler)
         if self.debug:
             self.log('i2c shutdown')
