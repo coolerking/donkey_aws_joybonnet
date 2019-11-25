@@ -9,8 +9,8 @@ try:
     from evdev import uinput, UInput
     from evdev import ecodes as e
 except ImportError:
-    exit("This library requires the evdev module\n' + \
-        'Install with: sudo pip install evdev")
+    exit('This library requires the evdev module\n' + \
+        'Install with: sudo pip install evdev')
 
 try:
     import pigpio
@@ -110,20 +110,20 @@ class JoyBonnet:
             self.ADS1015_REG_CONFIG_OS_SINGLE 
         configdata = [configword >> 8, configword & 0xFF]
 
-        if self.debug:
-            print("Setting config byte = 0x%02X%02X" % (configdata[0], configdata[1]))
+        #if self.debug:
+        #    print("Setting config byte = 0x%02X%02X" % (configdata[0], configdata[1]))
         self.pi.i2c_write_i2c_block_data(self.handler, self.ADS1x15_POINTER_CONFIG, configdata)
 
         configdata = self.read_i2c_block_data(self.ADS1x15_POINTER_CONFIG, 2) 
 
-        if self.debug:
-            print("Getting config byte = 0x%02X%02X" % (configdata[0], configdata[1]))
+        #if self.debug:
+        #    print("Getting config byte = 0x%02X%02X" % (configdata[0], configdata[1]))
 
         while True:
             try:
                 configdata = self.read_i2c_block_data(self.ADS1x15_POINTER_CONFIG, 2) 
-                if self.debug:
-                    print("Getting config byte = 0x%02X%02X" % (configdata[0], configdata[1]))
+                #if self.debug:
+                #    print("Getting config byte = 0x%02X%02X" % (configdata[0], configdata[1]))
                 if (configdata[0] & 0x80):
                     break
             except:
@@ -134,8 +134,8 @@ class JoyBonnet:
             print(analogdata),
         retval = (analogdata[0] << 8) | analogdata[1]
         retval /= 16
-        if self.debug:
-            self.log('-> {}'.format(retval))
+        #if self.debug:
+        #    self.log('-> {}'.format(retval))
         return retval
 
     def handle_button(self, pin):
